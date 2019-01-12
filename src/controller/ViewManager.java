@@ -107,4 +107,29 @@ public class ViewManager {
 			e.printStackTrace();
 		}
 	}
+		public long getMaxAccountNumber() {
+		try {
+			return db.getMaxAccountNumber();
+		} catch (SQLException e) {
+			return -1;
+		}
+	}
+
+	public void addAccount(BankAccount account) {
+		db.insertAccount(account);
+		login(String.valueOf(account.getAccountNumber()), String.valueOf(account.getUser().getPin()).toCharArray());
+	}
+
+	public int deposit(double amount) {
+		return account.deposit(amount);
+	}
+
+	public int withdraw(double amount) {
+		return account.withdraw(amount);
+	}
+	
+	public BankAccount getAccount() {
+		return account;
+	}
+}
 }
