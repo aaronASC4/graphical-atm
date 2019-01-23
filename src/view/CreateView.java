@@ -232,31 +232,107 @@ public class CreateView extends JPanel implements ActionListener {
 	 * @throws IOException
 	 */
 	
+	private void initcancelButton() {
+		cancelButton = new JButton("Back");
+		cancelButton.setBounds(5, 5, 100, 50);
+		cancelButton.addActionListener(this);
+		this.add(cancelButton);
+	}
+	
+	private void initSubmit() {
+		submitButton = new JButton("Submit");
+		submitButton.setBounds(200, 5, 100, 50);
+		submitButton.addActionListener(this);
+		this.add(submitButton);
+	}
+	
 	private void writeObject(ObjectOutputStream oos) throws IOException {
 		throw new IOException("ERROR: The CreateView class is not serializable.");
 	}
 	
-	///////////////////// OVERRIDDEN METHODS //////////////////////////////////////////
+	///////////////////// OVERRIDDEN METHODS ///////////------------////////////////////////
 	
-	/*
-	 * Responds to button clicks and other actions performed in the CreateView.
-	 * 
-	 * @param e
-	 */
+	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		
-		if (source.equals(logoutButton)) {
-			manager.logout();
+		if (source.equals(cancelButton)) {
+			manager.switchTo(ATM.LOGIN_VIEW);
+			this.removeAll();
+			this.initialize();
+			updateErrorMessage("");
+		} else if (source.equals(submitButton)) {
+			System.out.println("Hello");
+			try {
+				int pin = Integer.valueOf(new String(pinField.getPassword()));
+				if (String.valueOf(pinField).length() != 4) {
+					throw new InvalidParameterException("Please enter a 4 digit PIN");
+				}
+				
+				String dob = monthField.getSelectedItem().toString() + dayField.getSelectedItem().toString() + yearField.getSelectedItem().toString();
+				
+				String phoneString = phoneField.getText(); 
+				System.out.println("a");
+				long phone = Long.valueOf(phoneString);
+				System.out.println("h");
+				
+				if (String.valueOf(phoneField).length() != 10) {
+					throw new InvalidParameterException("Please enter a valid Phone Number");
+				}
+				
+				String firstName = firstNameField.getText();
+				String lastName = lastNameField.getText();
+				
+				String address = addressField.getText();
+				String state = stateField.getSelectedIndex() + "";
+				String city = cityField.getText();
+				String postal = postalField.getText();
+				
+				if (postal.length() != 5) {
+					throw new InvalidParameterException("Please enter a valid Postal Code");
+				}
+				
+				if (firstName.length() == 0 || lastName.length() == 0 || address.length() == 0 || city.length() == 0) {
+					throw new InvalidParameterException("Please complete all fields");
+				}
+				
+				createdUser = new User(pin, dob, phone, firstName, lastName, address, city, state, postal);
+				
+				long accountNumber = manager.getDatabase().getMaxAccountNumber() + 1;
+				
+				if (accountNumber == -1) {
+					throw new InvalidParameterException("Error retreiving Account Number");
+				}
+				account = new BankAccount('Y', accountNumber, 0.0, createdUser);
+				manager.setAccount(account); 
+				System.out.println("Hello 2");
+				manager.login(manager.getAccount().getAccountNumber() + "",
+						String.valueOf(manager.getAccount().getUser().getPin()).toCharArray());
+				updateErrorMessage("");
+				System.out.println("Hello 3");
+				manager.switchTo(ATM.LOGIN_VIEW);
+			}
+			catch (NumberFormatException e2){
+				System.out.println("help");
+				updateErrorMessage("Please complete all fields");
+			}
+			catch(InvalidParameterException e3) {
+				System.out.println("help1");
+				updateErrorMessage(e3.getMessage());
+			}
+			catch(NullPointerException e4) {
+				System.out.println("help2");
+				updateErrorMessage("Null Pointer");
+			}
+			catch (SQLException e5) {
+				System.out.println("help3");
+				updateErrorMessage("SQL Exception");
+			}
+		}  
+		else {
+			System.err.println("ERROR: Action command not found (" + e.getActionCommand() + ")");
 		}
-		// TODO
-		//
-		// this is where you'll setup your action listener, which is responsible for
-		// responding to actions the user might take in this view (an action can be a
-		// user clicking a button, typing in a textfield, etc.).
-		//
-		// feel free to use my action listener in LoginView.java as an example.
 	}
 }
